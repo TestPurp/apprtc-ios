@@ -24,8 +24,8 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#import "RTCSessionDescription.h"
+#import <WebRTC/RTCSessionDescription.h>
+//#import "RTCSessionDescription.h"
 
 @interface RTCSessionDescription (JSON)
 

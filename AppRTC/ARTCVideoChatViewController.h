@@ -7,10 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <libjingle_peerconnection/RTCEAGLVideoView.h>
-#import <AppRTC/ARDAppClient.h>
+//#import <libjingle_peerconnection/RTCEAGLVideoView.h>
 
-@interface ARTCVideoChatViewController : UIViewController <ARDAppClientDelegate, RTCEAGLVideoViewDelegate>
+#import <AppRTC/ARDAppClient.h>
+#import <WebRTC/WebRTC.h>
+
+@interface ARTCVideoChatViewController : UIViewController <ARDAppClientDelegate>
 
 //Views, Labels, and Buttons
 @property (strong, nonatomic) IBOutlet RTCEAGLVideoView *remoteView;

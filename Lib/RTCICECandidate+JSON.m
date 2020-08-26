@@ -33,33 +33,34 @@ static NSString const *kRTCICECandidateMidKey = @"id";
 static NSString const *kRTCICECandidateMLineIndexKey = @"label";
 static NSString const *kRTCICECandidateSdpKey = @"candidate";
 
-@implementation RTCICECandidate (JSON)
+@implementation RTCIceCandidate (JSON)
 
-+ (RTCICECandidate *)candidateFromJSONDictionary:(NSDictionary *)dictionary {
-  NSString *mid = dictionary[kRTCICECandidateMidKey];
-  NSString *sdp = dictionary[kRTCICECandidateSdpKey];
-  NSNumber *num = dictionary[kRTCICECandidateMLineIndexKey];
-  NSInteger mLineIndex = [num integerValue];
-  return [[RTCICECandidate alloc] initWithMid:mid index:mLineIndex sdp:sdp];
++ (RTCIceCandidate *)candidateFromJSONDictionary:(NSDictionary *)dictionary {
+    NSString *mid = dictionary[kRTCICECandidateMidKey];
+    NSString *sdp = dictionary[kRTCICECandidateSdpKey];
+    NSNumber *num = dictionary[kRTCICECandidateMLineIndexKey];
+    NSInteger mLineIndex = [num integerValue];
+    return [[RTCIceCandidate alloc] initWithSdp:sdp sdpMLineIndex:mLineIndex sdpMid:mid];
+//  return [[RTCIceCandidate alloc] initWithMid:mid index:mLineIndex sdp:sdp];
 }
 
 - (NSData *)JSONData {
-  NSDictionary *json = @{
-    kRTCICECandidateTypeKey : kRTCICECandidateTypeValue,
-    kRTCICECandidateMLineIndexKey : @(self.sdpMLineIndex),
-    kRTCICECandidateMidKey : self.sdpMid,
-    kRTCICECandidateSdpKey : self.sdp
-  };
-  NSError *error = nil;
-  NSData *data =
-      [NSJSONSerialization dataWithJSONObject:json
-                                      options:NSJSONWritingPrettyPrinted
-                                        error:&error];
-  if (error) {
-    NSLog(@"Error serializing JSON: %@", error);
-    return nil;
-  }
-  return data;
+    NSDictionary *json = @{
+        kRTCICECandidateTypeKey: kRTCICECandidateTypeValue,
+        kRTCICECandidateMLineIndexKey: @(self.sdpMLineIndex),
+        kRTCICECandidateMidKey: self.sdpMid,
+        kRTCICECandidateSdpKey: self.sdp
+    };
+    NSError *error = nil;
+    NSData *data =
+        [NSJSONSerialization dataWithJSONObject:json
+                                        options:NSJSONWritingPrettyPrinted
+                                          error:&error];
+    if (error) {
+        NSLog(@"Error serializing JSON: %@", error);
+        return nil;
+    }
+    return data;
 }
 
 @end

@@ -25,7 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import "RTCMediaConstraints.h"
+//#import "RTCMediaConstraints.h"
+#import <WebRTC/RTCMediaConstraints.h>
 
 @interface RTCMediaConstraints (JSON)
 

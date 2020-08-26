@@ -36,7 +36,7 @@
   NSDictionary *dict =
       [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
   if (error) {
-    NSLog(@"Error parsing JSON: %@", error.localizedDescription);
+    NSLog(@"Error parsing JSON: %@, detail:%@", error.localizedDescription, jsonString);
   }
   return dict;
 }
@@ -46,7 +46,7 @@
   NSDictionary *dict =
       [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
   if (error) {
-    NSLog(@"Error parsing JSON: %@", error.localizedDescription);
+    NSLog(@"Error parsing JSON: %@, detail: %@", error.localizedDescription, [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding]);
   }
   return dict;
 }

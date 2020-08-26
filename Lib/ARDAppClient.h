@@ -26,8 +26,8 @@
  */
 
 #import <Foundation/Foundation.h>
-
-#import "RTCVideoTrack.h"
+//#import "RTCVideoTrack.h"
+#import <WebRTC/RTCVideoTrack.h>
 
 typedef NS_ENUM(NSInteger, ARDAppClientState) {
   // Disconnected from servers.

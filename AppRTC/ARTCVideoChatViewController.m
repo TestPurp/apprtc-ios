@@ -202,6 +202,8 @@
     self.remoteVideoTrack = remoteVideoTrack;
     [self.remoteVideoTrack addRenderer:self.remoteView];
     
+    NSLog(@"%s, remoteTrack:%@, remoteView:%@", __PRETTY_FUNCTION__, remoteVideoTrack, self.remoteView);
+    
     [UIView animateWithDuration:0.4f animations:^{
         //Instead of using 0.4 of screen size, we re-calculate the local view and keep our aspect ratio
         UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
