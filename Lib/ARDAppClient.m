@@ -360,13 +360,13 @@ static NSInteger kARDAppClientErrorInvalidRoom = -7;
 
 - (void)     peerConnection:(RTCPeerConnection *)peerConnection
     didGenerateIceCandidate:(RTCIceCandidate *)candidate {
+    __weak ARDAppClient *ws = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         ARDICECandidateMessage *message =
             [[ARDICECandidateMessage alloc] initWithCandidate:candidate];
-        [self sendSignalingMessage:message];
-        
-        [_peerConnection addIceCandidate:candidate];
+        [ws sendSignalingMessage:message];
 
+        [ws.peerConnection addIceCandidate:candidate];
     });
 }
 
@@ -418,10 +418,8 @@ static NSInteger kARDAppClientErrorInvalidRoom = -7;
             return;
         }
 
-        [ws.peerConnection setLocalDescription:sdp completionHandler:^(NSError *_Nullable error) {
-            NSLog(@"setlocalsdp: %@", error);
-//            [ws peerConnection:ws.peerConnection didSetSessionDescriptionWithError:error];
-        }];
+//        [ws.peerConnection setLocalDescription:sdp completionHandler:^(NSError *_Nullable error) {
+//        }];
 
 //    [_peerConnection setLocalDescriptionWithDelegate:self
 //                                  sessionDescription:sdp];
@@ -455,10 +453,6 @@ static NSInteger kARDAppClientErrorInvalidRoom = -7;
             RTCMediaConstraints *constraints = [self defaultAnswerConstraints];
 //      [_peerConnection createAnswerWithDelegate:self
 //                                    constraints:constraints];
-            [ws.peerConnection answerForConstraints:constraints completionHandler:^(RTCSessionDescription *_Nullable sdp, NSError *_Nullable error) {
-                [ws.peerConnection setLocalDescription:sdp completionHandler:^(NSError *_Nullable error) {
-                }];
-            }];
         }
     });
 }
@@ -500,14 +494,17 @@ static NSInteger kARDAppClientErrorInvalidRoom = -7;
     __weak ARDAppClient *ws = self;
     [_peerConnection offerForConstraints:[self defaultOfferConstraints] completionHandler:^(RTCSessionDescription *_Nullable sdp, NSError *_Nullable error) {
         NSLog(@"offer resp: %@, sdp:%@", error, sdp.sdp);
-//        [ws peerConnection:ws.peerConnection didCreateSessionDescription:sdp error:error];
-        ARDSessionDescriptionMessage *message =
-            [[ARDSessionDescriptionMessage alloc] initWithDescription:sdp];
-        [ws sendSignalingMessage:message];
 
-        [ws.peerConnection setLocalDescription:sdp completionHandler:^(NSError *_Nullable error) {
-            NSLog(@"set localsdp rsp: %@", error);
-        }];
+        __weak ARDAppClient *ws = self;
+        dispatch_async(dispatch_get_main_queue(), ^{
+                           ARDSessionDescriptionMessage *message =
+                               [[ARDSessionDescriptionMessage alloc] initWithDescription:sdp];
+                           [ws sendSignalingMessage:message];
+
+                           [ws.peerConnection setLocalDescription:sdp completionHandler:^(NSError *_Nullable error) {
+                               NSLog(@"set localsdp rsp: %@", error);
+                           }];
+                       });
     }];
 }
 
@@ -539,18 +536,19 @@ static NSInteger kARDAppClientErrorInvalidRoom = -7;
 //            [_peerConnection setRemoteDescriptionWithDelegate:self
 //                                           sessionDescription:description];
             [ws.peerConnection setRemoteDescription:description completionHandler:^(NSError *_Nullable error) {
-                //                    [ws peerConnection:ws.peerConnection didSetSessionDescriptionWithError:error];
             }];
 
             if (message.type == kARDSignalingMessageTypeOffer) {
                 RTCMediaConstraints *constraints = [self defaultAnswerConstraints];
                 [ws.peerConnection answerForConstraints:constraints completionHandler:^(RTCSessionDescription *_Nullable sdp, NSError *_Nullable error) {
-                    ARDSessionDescriptionMessage *message =
-                        [[ARDSessionDescriptionMessage alloc] initWithDescription:sdp];
-                    [ws sendSignalingMessage:message];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                                       ARDSessionDescriptionMessage *message =
+                                           [[ARDSessionDescriptionMessage alloc] initWithDescription:sdp];
+                                       [ws sendSignalingMessage:message];
 
-                    [ws.peerConnection setLocalDescription:sdp completionHandler:^(NSError *_Nullable error) {
-                    }];
+                                       [ws.peerConnection setLocalDescription:sdp completionHandler:^(NSError *_Nullable error) {
+                                       }];
+                                   });
                 }];
             } else {
             }
