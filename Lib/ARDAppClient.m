@@ -212,7 +212,7 @@ static NSInteger kARDAppClientErrorInvalidRoom = -7;
                                 [strongSelf.delegate appClient:strongSelf didError:error];
                                 return;
                             }
-                            NSLog(@"Registered with room server.");
+                            NSLog(@"Registered with room server. :%@", response);
                             strongSelf.roomId = response.roomId;
                             strongSelf.clientId = response.clientId;
                             strongSelf.isInitiator = response.isInitiator;
@@ -256,6 +256,8 @@ static NSInteger kARDAppClientErrorInvalidRoom = -7;
     _messageQueue = [NSMutableArray array];
     _peerConnection = nil;
     self.state = kARDAppClientStateDisconnected;
+    
+    [UIApplication sharedApplication].idleTimerDisabled = NO;
 }
 
 #pragma mark - ARDWebSocketChannelDelegate
@@ -486,6 +488,9 @@ static NSInteger kARDAppClientErrorInvalidRoom = -7;
     } else {
         [self waitForAnswer];
     }
+    
+    [UIApplication sharedApplication].idleTimerDisabled = YES;
+    
 }
 
 - (void)sendOffer {
@@ -663,7 +668,9 @@ static NSInteger kARDAppClientErrorInvalidRoom = -7;
                                                       return;
                                                   }
                                                   NSDictionary *dict = [NSDictionary dictionaryWithJSONData:data];
-                                                  turnServers = [RTCIceServer serversFromCEODJSONDictionary:dict];
+                                                  if (dict) {
+                                                      turnServers = [RTCIceServer serversFromCEODJSONDictionary:dict];
+                                                  }
                                                   completionHandler(turnServers);
                                               }];
 }
