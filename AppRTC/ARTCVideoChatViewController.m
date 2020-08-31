@@ -184,6 +184,7 @@
         case kARDAppClientStateDisconnected:
             NSLog(@"Client disconnected.");
             [self remoteDisconnected];
+            [self.navigationController popViewControllerAnimated:YES];
             break;
     }
 }
