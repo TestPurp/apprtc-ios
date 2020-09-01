@@ -38,46 +38,46 @@ static NSString const *kARDSignalingMessageTypeKey = @"type";
 @synthesize type = _type;
 
 - (instancetype)initWithType:(ARDSignalingMessageType)type {
-  if (self = [super init]) {
-    _type = type;
-  }
-  return self;
+    if (self = [super init]) {
+        _type = type;
+    }
+    return self;
 }
 
 - (NSString *)description {
-  return [[NSString alloc] initWithData:[self JSONData]
-                               encoding:NSUTF8StringEncoding];
+    return [[NSString alloc] initWithData:[self JSONData]
+                                 encoding:NSUTF8StringEncoding];
 }
 
 + (ARDSignalingMessage *)messageFromJSONString:(NSString *)jsonString {
-  NSDictionary *values = [NSDictionary dictionaryWithJSONString:jsonString];
-  if (!values) {
-    NSLog(@"Error parsing signaling message JSON.");
-    return nil;
-  }
+    NSDictionary *values = [NSDictionary dictionaryWithJSONString:jsonString];
+    if (!values) {
+        NSLog(@"Error parsing signaling message JSON.");
+        return nil;
+    }
 
-  NSString *typeString = values[kARDSignalingMessageTypeKey];
-  ARDSignalingMessage *message = nil;
-  if ([typeString isEqualToString:@"candidate"]) {
-      RTCIceCandidate *candidate =
-        [RTCIceCandidate candidateFromJSONDictionary:values];
-    message = [[ARDICECandidateMessage alloc] initWithCandidate:candidate];
-  } else if ([typeString isEqualToString:@"offer"] ||
-             [typeString isEqualToString:@"answer"]) {
-    RTCSessionDescription *description =
-        [RTCSessionDescription descriptionFromJSONDictionary:values];
-    message =
-        [[ARDSessionDescriptionMessage alloc] initWithDescription:description];
-  } else if ([typeString isEqualToString:@"bye"]) {
-    message = [[ARDByeMessage alloc] init];
-  } else {
-    NSLog(@"Unexpected type: %@", typeString);
-  }
-  return message;
+    NSString *typeString = values[kARDSignalingMessageTypeKey];
+    ARDSignalingMessage *message = nil;
+    if ([typeString isEqualToString:@"candidate"]) {
+        RTCIceCandidate *candidate =
+            [RTCIceCandidate candidateFromJSONDictionary:values];
+        message = [[ARDICECandidateMessage alloc] initWithCandidate:candidate];
+    } else if ([typeString isEqualToString:@"offer"] ||
+               [typeString isEqualToString:@"answer"]) {
+        RTCSessionDescription *description =
+            [RTCSessionDescription descriptionFromJSONDictionary:values];
+        message =
+            [[ARDSessionDescriptionMessage alloc] initWithDescription:description];
+    } else if ([typeString isEqualToString:@"bye"]) {
+        message = [[ARDByeMessage alloc] initWithClientId:values[@"clientId"]];
+    } else {
+        NSLog(@"Unexpected type: %@", typeString);
+    }
+    return message;
 }
 
 - (NSData *)JSONData {
-  return nil;
+    return nil;
 }
 
 @end
@@ -87,14 +87,14 @@ static NSString const *kARDSignalingMessageTypeKey = @"type";
 @synthesize candidate = _candidate;
 
 - (instancetype)initWithCandidate:(RTCIceCandidate *)candidate {
-  if (self = [super initWithType:kARDSignalingMessageTypeCandidate]) {
-    _candidate = candidate;
-  }
-  return self;
+    if (self = [super initWithType:kARDSignalingMessageTypeCandidate]) {
+        _candidate = candidate;
+    }
+    return self;
 }
 
 - (NSData *)JSONData {
-  return [_candidate JSONData];
+    return [_candidate JSONData];
 }
 
 @end
@@ -104,40 +104,52 @@ static NSString const *kARDSignalingMessageTypeKey = @"type";
 @synthesize sessionDescription = _sessionDescription;
 
 - (instancetype)initWithDescription:(RTCSessionDescription *)description {
-  ARDSignalingMessageType type = kARDSignalingMessageTypeOffer;
-  NSString *typeString = [RTCSessionDescription stringForType:description.type];
-  if ([typeString isEqualToString:@"offer"]) {
-    type = kARDSignalingMessageTypeOffer;
-  } else if ([typeString isEqualToString:@"answer"]) {
-    type = kARDSignalingMessageTypeAnswer;
-  } else {
-    NSAssert(NO, @"Unexpected type: %@", typeString);
-  }
-  if (self = [super initWithType:type]) {
-    _sessionDescription = description;
-  }
-  return self;
+    ARDSignalingMessageType type = kARDSignalingMessageTypeOffer;
+    NSString *typeString = [RTCSessionDescription stringForType:description.type];
+    if ([typeString isEqualToString:@"offer"]) {
+        type = kARDSignalingMessageTypeOffer;
+    } else if ([typeString isEqualToString:@"answer"]) {
+        type = kARDSignalingMessageTypeAnswer;
+    } else {
+        NSAssert(NO, @"Unexpected type: %@", typeString);
+    }
+    if (self = [super initWithType:type]) {
+        _sessionDescription = description;
+    }
+    return self;
 }
 
 - (NSData *)JSONData {
-  return [_sessionDescription JSONData];
+    return [_sessionDescription JSONData];
 }
 
 @end
 
+@interface ARDByeMessage ()
+@property (nonatomic, copy) NSString *clientId;
+@end
+
 @implementation ARDByeMessage
 
+- (instancetype)initWithClientId:(NSString *)clientId {
+    if (self = [super initWithType:kARDSignalingMessageTypeBye]) {
+        self.clientId = clientId;
+    }
+    return self;
+}
+
 - (instancetype)init {
-  return [super initWithType:kARDSignalingMessageTypeBye];
+    return [super initWithType:kARDSignalingMessageTypeBye];
 }
 
 - (NSData *)JSONData {
-  NSDictionary *message = @{
-    @"type": @"bye"
-  };
-  return [NSJSONSerialization dataWithJSONObject:message
-                                         options:NSJSONWritingPrettyPrinted
-                                           error:NULL];
+    NSDictionary *message = @{
+        @"type": @"bye",
+        @"clientId": self.clientId ? : @""
+    };
+    return [NSJSONSerialization dataWithJSONObject:message
+                                           options:NSJSONWritingPrettyPrinted
+                                             error:NULL];
 }
 
 @end

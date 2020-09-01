@@ -32,15 +32,15 @@
 //#import "RTCSessionDescription.h"
 
 typedef enum {
-  kARDSignalingMessageTypeCandidate,
-  kARDSignalingMessageTypeOffer,
-  kARDSignalingMessageTypeAnswer,
-  kARDSignalingMessageTypeBye,
+    kARDSignalingMessageTypeCandidate,
+    kARDSignalingMessageTypeOffer,
+    kARDSignalingMessageTypeAnswer,
+    kARDSignalingMessageTypeBye,
 } ARDSignalingMessageType;
 
 @interface ARDSignalingMessage : NSObject
 
-@property(nonatomic, readonly) ARDSignalingMessageType type;
+@property (nonatomic, readonly) ARDSignalingMessageType type;
 
 + (ARDSignalingMessage *)messageFromJSONString:(NSString *)jsonString;
 - (NSData *)JSONData;
@@ -49,7 +49,7 @@ typedef enum {
 
 @interface ARDICECandidateMessage : ARDSignalingMessage
 
-@property(nonatomic, readonly) RTCIceCandidate *candidate;
+@property (nonatomic, readonly) RTCIceCandidate *candidate;
 
 - (instancetype)initWithCandidate:(RTCIceCandidate *)candidate;
 
@@ -57,11 +57,13 @@ typedef enum {
 
 @interface ARDSessionDescriptionMessage : ARDSignalingMessage
 
-@property(nonatomic, readonly) RTCSessionDescription *sessionDescription;
+@property (nonatomic, readonly) RTCSessionDescription *sessionDescription;
 
 - (instancetype)initWithDescription:(RTCSessionDescription *)description;
 
 @end
 
 @interface ARDByeMessage : ARDSignalingMessage
+- (instancetype)initWithClientId:(NSString *)clientId;
+
 @end

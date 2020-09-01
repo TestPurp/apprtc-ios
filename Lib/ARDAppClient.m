@@ -242,7 +242,7 @@ static NSInteger kARDAppClientErrorInvalidRoom = -7;
     if (_channel) {
         if (_channel.state == kARDWebSocketChannelStateRegistered) {
             // Tell the other client we're hanging up.
-            ARDByeMessage *byeMessage = [[ARDByeMessage alloc] init];
+            ARDByeMessage *byeMessage = [[ARDByeMessage alloc] initWithClientId:self.clientId];
             NSData *byeData = [byeMessage JSONData];
             [_channel sendData:byeData];
         }
