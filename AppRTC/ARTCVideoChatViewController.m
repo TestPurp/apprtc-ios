@@ -190,6 +190,7 @@
 }
 
 - (void)appClient:(ARDAppClient *)client didReceiveLocalVideoTrack:(RTCVideoTrack *)localVideoTrack {
+    NSLog(@"%s", __PRETTY_FUNCTION__);
     if (self.localVideoTrack) {
         [self.localVideoTrack removeRenderer:self.localView];
         self.localVideoTrack = nil;
