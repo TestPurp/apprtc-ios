@@ -53,6 +53,8 @@ typedef NS_ENUM(NSInteger, ARDAppClientState) {
 - (void)appClient:(ARDAppClient *)client
          didError:(NSError *)error;
 
+- (void)appClient:(ARDAppClient *)client remoteBye:(NSString *)cid;
+
 @end
 
 // Handles connections to the AppRTC server for a given room.

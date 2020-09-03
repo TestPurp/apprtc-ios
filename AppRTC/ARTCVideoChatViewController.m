@@ -200,6 +200,10 @@
     [self.localVideoTrack addRenderer:self.localView];
 }
 
+- (void)appClient:(ARDAppClient *)client remoteBye:(NSString *)cid {
+    [self remoteDisconnected];
+}
+
 - (void)appClient:(ARDAppClient *)client didReceiveRemoteVideoTrack:(RTCVideoTrack *)remoteVideoTrack {
     self.remoteVideoTrack = remoteVideoTrack;
     [self.remoteVideoTrack addRenderer:self.remoteView];

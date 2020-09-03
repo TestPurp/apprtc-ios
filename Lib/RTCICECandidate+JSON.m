@@ -63,4 +63,13 @@ static NSString const *kRTCICECandidateSdpKey = @"candidate";
     return data;
 }
 
+- (NSDictionary *)rawDict {
+    return @{
+        kRTCICECandidateTypeKey: kRTCICECandidateTypeValue,
+        kRTCICECandidateMLineIndexKey: @(self.sdpMLineIndex),
+        kRTCICECandidateMidKey: self.sdpMid,
+        kRTCICECandidateSdpKey: self.sdp
+    };
+}
+
 @end

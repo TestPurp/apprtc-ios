@@ -41,6 +41,7 @@ typedef enum {
 @interface ARDSignalingMessage : NSObject
 
 @property (nonatomic, readonly) ARDSignalingMessageType type;
+@property (nonatomic, copy) NSString *clientId;
 
 + (ARDSignalingMessage *)messageFromJSONString:(NSString *)jsonString;
 - (NSData *)JSONData;

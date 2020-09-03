@@ -321,14 +321,15 @@ static NSInteger kARDAppClientErrorInvalidRoom = -7;
 //}
 
 - (void)peerConnection:(RTCPeerConnection *)peerConnection didAddStream:(RTCMediaStream *)stream {
+    __weak ARDAppClient *ws = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"Received %lu video tracks and %lu audio tracks",
               (unsigned long)stream.videoTracks.count,
               (unsigned long)stream.audioTracks.count);
         if (stream.videoTracks.count) {
             RTCVideoTrack *videoTrack = stream.videoTracks[0];
-            [_delegate appClient:self didReceiveRemoteVideoTrack:videoTrack];
-            if (_isSpeakerEnabled) [self enableSpeaker]; //Use the "handsfree" speaker instead of the ear speaker.
+            [ws.delegate appClient:ws didReceiveRemoteVideoTrack:videoTrack];
+            if (ws.isSpeakerEnabled) [ws enableSpeaker]; //Use the "handsfree" speaker instead of the ear speaker.
         }
     });
 }
@@ -353,6 +354,17 @@ static NSInteger kARDAppClientErrorInvalidRoom = -7;
 - (void)         peerConnection:(RTCPeerConnection *)peerConnection
     didChangeIceConnectionState:(RTCIceConnectionState)newState {
     NSLog(@"ICE state changed: %d", newState);
+    
+    __weak ARDAppClient *ws = self;
+    if (
+        RTCIceConnectionStateDisconnected == newState ||
+        RTCIceConnectionStateClosed == newState
+        ) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            //recreate peerconnection
+            [ws remoteSayBye:@""];
+        });
+    }
 }
 
 - (void)        peerConnection:(RTCPeerConnection *)peerConnection
@@ -362,14 +374,27 @@ static NSInteger kARDAppClientErrorInvalidRoom = -7;
 
 - (void)     peerConnection:(RTCPeerConnection *)peerConnection
     didGenerateIceCandidate:(RTCIceCandidate *)candidate {
+    NSLog(@"%s candidate: %@", __FUNCTION__, candidate);
     __weak ARDAppClient *ws = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         ARDICECandidateMessage *message =
             [[ARDICECandidateMessage alloc] initWithCandidate:candidate];
+        message.clientId = ws.clientId;
         [ws sendSignalingMessage:message];
 
         [ws.peerConnection addIceCandidate:candidate];
     });
+}
+
+- (void)peerConnection:(RTCPeerConnection *)peerConnection didRemoveIceCandidates:(NSArray<RTCIceCandidate *> *)candidates {
+    NSLog(@"%s: peerConnection-senders:%@, peerConnection-rcvs:%@", __FUNCTION__, peerConnection.senders, peerConnection.receivers);
+
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//      ARDIceCandidateRemovalMessage *message =
+//          [[ARDIceCandidateRemovalMessage alloc]
+//              initWithRemovedCandidates:candidates];
+//      [self sendSignalingMessage:message];
+//    });
 }
 
 //- (void)  peerConnection:(RTCPeerConnection *)peerConnection
@@ -390,10 +415,6 @@ static NSInteger kARDAppClientErrorInvalidRoom = -7;
 //        [self sendSignalingMessage:message];
 //    });
 //}
-
-- (void)    peerConnection:(RTCPeerConnection *)peerConnection
-    didRemoveIceCandidates:(NSArray<RTCIceCandidate *> *)candidates {
-}
 
 - (void)peerConnection:(RTCPeerConnection *)peerConnection
     didOpenDataChannel:(RTCDataChannel *)dataChannel {
@@ -433,6 +454,7 @@ static NSInteger kARDAppClientErrorInvalidRoom = -7;
         ARDSessionDescriptionMessage *message =
             [[ARDSessionDescriptionMessage alloc]
              initWithDescription:sdp];
+        message.clientId = ws.clientId;
         [ws sendSignalingMessage:message];
 
 //    [_peerConnection setLocalDescriptionWithDelegate:self
@@ -591,9 +613,33 @@ static NSInteger kARDAppClientErrorInvalidRoom = -7;
             // Other client disconnected.
             // TODO(tkchin): support waiting in room for next client. For now just
             // disconnect.
-            [self disconnect];
+            if ([message.clientId isEqualToString:self.clientId]) {
+                [self disconnect];
+            } else {
+                //TODO: idle, wait other join
+                [self remoteSayBye:message.clientId];
+            }
+//            [self disconnect];
             break;
     }
+}
+
+- (void)remoteSayBye:(NSString *)cid {
+    __weak ARDAppClient *ws = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [ws.delegate appClient:ws remoteBye:cid];
+//        [ws.peerConnection close];
+        RTCMediaConstraints *constraints = [ws defaultPeerConnectionConstraints];
+        RTCConfiguration *config = [[RTCConfiguration alloc] init];
+        config.iceServers = ws.iceServers;
+
+        ws.peerConnection = [ws.factory peerConnectionWithConfiguration:config constraints:constraints delegate:ws];
+
+        RTCMediaStream *localStream = [ws createLocalMediaStream];
+        [ws.peerConnection addStream:localStream];
+        ws.isInitiator = YES;
+        [ws sendOffer];
+    });
 }
 
 - (void)sendSignalingMessage:(ARDSignalingMessage *)message {

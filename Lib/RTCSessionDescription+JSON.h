@@ -32,5 +32,6 @@
 + (RTCSessionDescription *)descriptionFromJSONDictionary:
     (NSDictionary *)dictionary;
 - (NSData *)JSONData;
+- (NSDictionary *)rawDict;
 
 @end

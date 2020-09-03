@@ -62,12 +62,14 @@ static NSString const *kARDSignalingMessageTypeKey = @"type";
         RTCIceCandidate *candidate =
             [RTCIceCandidate candidateFromJSONDictionary:values];
         message = [[ARDICECandidateMessage alloc] initWithCandidate:candidate];
+        message.clientId = values[@"cliendId"];
     } else if ([typeString isEqualToString:@"offer"] ||
                [typeString isEqualToString:@"answer"]) {
         RTCSessionDescription *description =
             [RTCSessionDescription descriptionFromJSONDictionary:values];
         message =
             [[ARDSessionDescriptionMessage alloc] initWithDescription:description];
+        message.clientId = values[@"cliendId"];
     } else if ([typeString isEqualToString:@"bye"]) {
         message = [[ARDByeMessage alloc] initWithClientId:values[@"clientId"]];
     } else {
@@ -94,7 +96,20 @@ static NSString const *kARDSignalingMessageTypeKey = @"type";
 }
 
 - (NSData *)JSONData {
-    return [_candidate JSONData];
+    NSMutableDictionary *dict = _candidate.rawDict.mutableCopy;
+    dict[@"clientId"] = self.clientId ? : @"";
+    NSError *error = nil;
+    NSData *data =
+        [NSJSONSerialization dataWithJSONObject:dict
+                                        options:NSJSONWritingPrettyPrinted
+                                          error:&error];
+    if (error) {
+        NSLog(@"Error serializing JSON: %@", error);
+        return nil;
+    }
+    return data;
+
+//    return [_candidate JSONData];
 }
 
 @end
@@ -120,13 +135,18 @@ static NSString const *kARDSignalingMessageTypeKey = @"type";
 }
 
 - (NSData *)JSONData {
-    return [_sessionDescription JSONData];
+    NSMutableDictionary *dict = self.sessionDescription.rawDict.mutableCopy;
+    dict[@"clientId"] = self.clientId ? : @"";
+
+    return [NSJSONSerialization dataWithJSONObject:dict options:0 error:nil];
+
+//    return [_sessionDescription JSONData];
 }
 
 @end
 
 @interface ARDByeMessage ()
-@property (nonatomic, copy) NSString *clientId;
+
 @end
 
 @implementation ARDByeMessage

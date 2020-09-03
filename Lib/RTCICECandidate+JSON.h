@@ -32,5 +32,6 @@
 
 + (RTCIceCandidate *)candidateFromJSONDictionary:(NSDictionary *)dictionary;
 - (NSData *)JSONData;
+- (NSDictionary *)rawDict;
 
 @end

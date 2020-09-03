@@ -34,17 +34,24 @@ static NSString const *kRTCSessionDescriptionSdpKey = @"sdp";
 
 + (RTCSessionDescription *)descriptionFromJSONDictionary:
     (NSDictionary *)dictionary {
-  NSString *type = dictionary[kRTCSessionDescriptionTypeKey];
-  NSString *sdp = dictionary[kRTCSessionDescriptionSdpKey];
-  return [[RTCSessionDescription alloc] initWithType:[RTCSessionDescription typeForString:type] sdp:sdp];
+    NSString *type = dictionary[kRTCSessionDescriptionTypeKey];
+    NSString *sdp = dictionary[kRTCSessionDescriptionSdpKey];
+    return [[RTCSessionDescription alloc] initWithType:[RTCSessionDescription typeForString:type] sdp:sdp];
 }
 
 - (NSData *)JSONData {
-  NSDictionary *json = @{
-    kRTCSessionDescriptionTypeKey : [RTCSessionDescription stringForType:self.type],
-    kRTCSessionDescriptionSdpKey : self.sdp
-  };
-  return [NSJSONSerialization dataWithJSONObject:json options:0 error:nil];
+    NSDictionary *json = @{
+        kRTCSessionDescriptionTypeKey: [RTCSessionDescription stringForType:self.type],
+        kRTCSessionDescriptionSdpKey: self.sdp
+    };
+    return [NSJSONSerialization dataWithJSONObject:json options:0 error:nil];
+}
+
+- (NSDictionary *)rawDict {
+    return @{
+        kRTCSessionDescriptionTypeKey: [RTCSessionDescription stringForType:self.type],
+        kRTCSessionDescriptionSdpKey: self.sdp
+    };
 }
 
 @end
